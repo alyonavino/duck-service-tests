@@ -9,6 +9,9 @@ import org.springframework.http.MediaType;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.consol.citrus.DefaultTestActionBuilder.action;
 import static com.consol.citrus.dsl.MessageSupport.MessageBodySupport.fromBody;
 import static com.consol.citrus.http.actions.HttpActionBuilder.http;
 
@@ -17,12 +20,8 @@ public class DuckDeleteTest extends TestNGCitrusSpringSupport {
     @CitrusTest
     public void successfulDelete(@Optional @CitrusResource TestCaseRunner runner) {
         createDuck(runner,"yellow", 10.0, "rubber", "quack", "ACTIVE");
-        runner.$(http().client("http://localhost:2222")
-                .receive()
-                .response(HttpStatus.OK)
-                .message()
-                .extract(fromBody().expression("$.id", "duckId")));
-        duckDelete(runner,"${duckId}");
+        String id = extractId(runner).toString();
+        duckDelete(runner,id);
         validateResponse(runner,"{\n" + " \"message\": \"Duck is deleted\"\n" + "}");
     }
 
@@ -54,6 +53,19 @@ public class DuckDeleteTest extends TestNGCitrusSpringSupport {
                 .message()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(responseMessage));
+    }
+
+    private AtomicInteger extractId(TestCaseRunner runner) {
+        AtomicInteger id = new AtomicInteger();
+        runner.$(http().client("http://localhost:2222")
+                .receive()
+                .response(HttpStatus.OK)
+                .message()
+                .extract(fromBody().expression("$.id", "duckId")));
+        runner.$(action(context -> {
+            id.set(context.getVariable("${duckId}", int.class));
+        }));
+        return id;
     }
 }
 

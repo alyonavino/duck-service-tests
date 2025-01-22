@@ -16,8 +16,19 @@ import static com.consol.citrus.http.actions.HttpActionBuilder.http;
 public class DuckCreateTest extends TestNGCitrusSpringSupport {
     @Test(description = "Проверка того, что создалась уточка c material = rubber")
     @CitrusTest
-    public void successfulCreate1(@Optional @CitrusResource TestCaseRunner runner) {
+    public void successfulCreateWithMaterialRubber(@Optional @CitrusResource TestCaseRunner runner) {
         createDuck(runner, "yellow", 0.04, "rubber", "quack", "ACTIVE");
+        validateWithMaterialRubber(runner);
+    }
+
+    @Test(description = "Проверка того, что создалась уточка c material = wood")
+    @CitrusTest
+    public void successfulCreateWithMaterialWood(@Optional @CitrusResource TestCaseRunner runner) {
+        createDuck(runner, "yellow", 0.08, "wood", "quack", "ACTIVE");
+        validateWithMaterialWood(runner);
+    }
+
+    private void validateWithMaterialRubber(TestCaseRunner runner) {
         runner.$(http().client("http://localhost:2222")
                 .receive()
                 .response(HttpStatus.OK)
@@ -30,10 +41,7 @@ public class DuckCreateTest extends TestNGCitrusSpringSupport {
                 .validate(jsonPath().expression("$.wingsState", "ACTIVE")));
     }
 
-    @Test(description = "Проверка того, что создалась уточка c material = rubber")
-    @CitrusTest
-    public void successfulCreate2(@Optional @CitrusResource TestCaseRunner runner) {
-        createDuck(runner, "yellow", 0.08, "wood", "quack", "ACTIVE");
+    private void validateWithMaterialWood(TestCaseRunner runner) {
         runner.$(http().client("http://localhost:2222")
                 .receive()
                 .response(HttpStatus.OK)

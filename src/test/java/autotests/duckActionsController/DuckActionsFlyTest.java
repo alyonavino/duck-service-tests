@@ -9,6 +9,9 @@ import org.springframework.http.MediaType;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.consol.citrus.DefaultTestActionBuilder.action;
 import static com.consol.citrus.dsl.MessageSupport.MessageBodySupport.fromBody;
 import static com.consol.citrus.http.actions.HttpActionBuilder.http;
 
@@ -17,12 +20,8 @@ public class DuckActionsFlyTest extends TestNGCitrusSpringSupport {
     @CitrusTest
     public void successfulFly(@Optional @CitrusResource TestCaseRunner runner) {
         createDuck(runner,"yellow", 0.07, "rubber", "quack", "ACTIVE");
-        runner.$(http().client("http://localhost:2222")
-                .receive()
-                .response(HttpStatus.OK)
-                .message()
-                .extract(fromBody().expression("$.id", "duckId")));
-        duckFly(runner, "${duckId}");
+        String id = extractId(runner).toString();
+        duckFly(runner, id);
         validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"I am flying :)\"\n" + "}");
     }
 
@@ -30,12 +29,8 @@ public class DuckActionsFlyTest extends TestNGCitrusSpringSupport {
     @CitrusTest
     public void notSuccessfulFly(@Optional @CitrusResource TestCaseRunner runner) {
         createDuck(runner,"yellow", 15.0, "rubber", "quack", "FIXED");
-        runner.$(http().client("http://localhost:2222")
-                .receive()
-                .response(HttpStatus.OK)
-                .message()
-                .extract(fromBody().expression("$.id", "duckId")));
-        duckFly(runner, "${duckId}");
+        String id = extractId(runner).toString();
+        duckFly(runner, id);
         validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"I can not fly :C\"\n" + "}");
     }
 
@@ -43,12 +38,8 @@ public class DuckActionsFlyTest extends TestNGCitrusSpringSupport {
     @CitrusTest
     public void undefinedWingsState(@Optional @CitrusResource TestCaseRunner runner) {
         createDuck(runner,"yellow", 11.0, "rubber", "quack", "UNDEFINED");
-        runner.$(http().client("http://localhost:2222")
-                .receive()
-                .response(HttpStatus.OK)
-                .message()
-                .extract(fromBody().expression("$.id", "duckId")));
-        duckFly(runner, "${duckId}");
+        String id = extractId(runner).toString();
+        duckFly(runner, id);
         validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"Wings are not detected :(\"\n" + "}");
     }
 
@@ -80,6 +71,19 @@ public class DuckActionsFlyTest extends TestNGCitrusSpringSupport {
                         "\"material\": \"" + material + "\",\n" +
                         "\"sound\": \"" + sound + "\",\n" +
                         "\"wingsState\": \"" + wingsState + "\"\n" + "}"));
+    }
+
+    private AtomicInteger extractId(TestCaseRunner runner) {
+        AtomicInteger id = new AtomicInteger();
+        runner.$(http().client("http://localhost:2222")
+                .receive()
+                .response(HttpStatus.OK)
+                .message()
+                .extract(fromBody().expression("$.id", "duckId")));
+        runner.$(action(context -> {
+            id.set(context.getVariable("${duckId}", int.class));
+        }));
+        return id;
     }
 }
 
