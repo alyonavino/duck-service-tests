@@ -22,7 +22,7 @@ public class DuckActionsFlyTest extends TestNGCitrusSpringSupport {
         createDuck(runner,"yellow", 0.07, "rubber", "quack", "ACTIVE");
         String id = extractId(runner).toString();
         duckFly(runner, id);
-        validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"I am flying :)\"\n" + "}");
+        validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"I am flying\"\n" + "}");
     }
 
     @Test(description = "Проверка того, что уточка не полетела, существующий id со связанными крыльями")
@@ -31,7 +31,7 @@ public class DuckActionsFlyTest extends TestNGCitrusSpringSupport {
         createDuck(runner,"yellow", 15.0, "rubber", "quack", "FIXED");
         String id = extractId(runner).toString();
         duckFly(runner, id);
-        validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"I can not fly :C\"\n" + "}");
+        validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"I can't fly\"\n" + "}");
     }
 
     @Test(description = "Проверка того, что крылья в неопределенном состоянии с существующим id")
@@ -40,7 +40,7 @@ public class DuckActionsFlyTest extends TestNGCitrusSpringSupport {
         createDuck(runner,"yellow", 11.0, "rubber", "quack", "UNDEFINED");
         String id = extractId(runner).toString();
         duckFly(runner, id);
-        validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"Wings are not detected :(\"\n" + "}");
+        validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"Wings are not detected\"\n" + "}");
     }
 
     public void duckFly(TestCaseRunner runner, String id) {
