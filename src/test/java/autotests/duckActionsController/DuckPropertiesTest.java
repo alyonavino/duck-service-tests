@@ -20,7 +20,7 @@ import static com.consol.citrus.validation.json.JsonPathMessageValidationContext
 public class DuckPropertiesTest extends TestNGCitrusSpringSupport {
     @Test(description = "Проверка того, что показываются характеристики при четном id и при material = wood")
     @CitrusTest
-    public void successfulSeePropertiesWithClearIdAndMaterialWood(@Optional @CitrusResource TestCaseRunner runner) {
+    public void getWoodDuckPropertiesEvenId(@Optional @CitrusResource TestCaseRunner runner) {
         AtomicInteger id;
         do {
             createDuck(runner, "yellow", 0.07, "wood", "quack", "ACTIVE");
@@ -32,7 +32,7 @@ public class DuckPropertiesTest extends TestNGCitrusSpringSupport {
 
     @Test(description = "Проверка того, что показываются характеристики при нечетном id и при material = rubber")
     @CitrusTest
-    public void successfulSeePropertiesWithNonClearIdAndMaterialRubber(@Optional @CitrusResource TestCaseRunner runner) {
+    public void getRubberDuckPropertiesOddId(@Optional @CitrusResource TestCaseRunner runner) {
         AtomicInteger id;
         do {
             createDuck(runner, "yellow", 0.07, "rubber", "quack", "ACTIVE");
