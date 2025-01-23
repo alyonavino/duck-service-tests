@@ -6,6 +6,3 @@ gradle/
 build/
 target/
 src/main
-
-gradlew.*
-settings.gradle
