@@ -18,40 +18,27 @@ public class DuckCreateTest extends TestNGCitrusSpringSupport {
     @CitrusTest
     public void successfulCreateWithMaterialRubber(@Optional @CitrusResource TestCaseRunner runner) {
         createDuck(runner, "yellow", 0.04, "rubber", "quack", "ACTIVE");
-        validateWithMaterialRubber(runner);
+        validateWithMaterial(runner, "yellow", "0.04", "rubber", "quack", "ACTIVE");
     }
 
     @Test(description = "Проверка того, что создалась уточка c material = wood")
     @CitrusTest
     public void successfulCreateWithMaterialWood(@Optional @CitrusResource TestCaseRunner runner) {
         createDuck(runner, "yellow", 0.08, "wood", "quack", "ACTIVE");
-        validateWithMaterialWood(runner);
+        validateWithMaterial(runner, "yellow", "0.08", "wood", "quack", "ACTIVE");
     }
 
-    private void validateWithMaterialRubber(TestCaseRunner runner) {
+    public void validateWithMaterial(TestCaseRunner runner, String color, String height, String material, String sound, String wingsState) {
         runner.$(http().client("http://localhost:2222")
                 .receive()
                 .response(HttpStatus.OK)
                 .message()
                 .type(MessageType.JSON)
-                .validate(jsonPath().expression("$.color", "yellow"))
-                .validate(jsonPath().expression("$.height", "0.04"))
-                .validate(jsonPath().expression("$.material", "rubber"))
-                .validate(jsonPath().expression("$.sound", "quack"))
-                .validate(jsonPath().expression("$.wingsState", "ACTIVE")));
-    }
-
-    private void validateWithMaterialWood(TestCaseRunner runner) {
-        runner.$(http().client("http://localhost:2222")
-                .receive()
-                .response(HttpStatus.OK)
-                .message()
-                .type(MessageType.JSON)
-                .validate(jsonPath().expression("$.color", "yellow"))
-                .validate(jsonPath().expression("$.height", "0.08"))
-                .validate(jsonPath().expression("$.material", "wood"))
-                .validate(jsonPath().expression("$.sound", "quack"))
-                .validate(jsonPath().expression("$.wingsState", "ACTIVE")));
+                .validate(jsonPath().expression("$.color", color))
+                .validate(jsonPath().expression("$.height", height))
+                .validate(jsonPath().expression("$.material", material))
+                .validate(jsonPath().expression("$.sound", sound))
+                .validate(jsonPath().expression("$.wingsState", wingsState)));
     }
 
     public void createDuck(TestCaseRunner runner, String color, double height, String material, String sound, String wingsState){

@@ -25,7 +25,7 @@ public class DuckActionsSwimTest extends TestNGCitrusSpringSupport {
         validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"I'm swimming\"\n" + "}");
     }
 
-    @Test(description = "Проверка того, поплыла ли уточка, несущестующий id")
+    @Test(description = "Проверка того, поплыла ли уточка, несуществующий id")
     @CitrusTest
     public void swimDuckWithNonExistingId(@Optional @CitrusResource TestCaseRunner runner) {
         createDuck(runner,"yellow", 0.07, "rubber", "quack", "FIXED");
