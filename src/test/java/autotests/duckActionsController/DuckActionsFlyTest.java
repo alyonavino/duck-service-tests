@@ -1,5 +1,6 @@
 package autotests.duckActionsController;
 
+import clients.DuckActionClient;
 import com.consol.citrus.TestCaseRunner;
 import com.consol.citrus.annotations.CitrusResource;
 import com.consol.citrus.annotations.CitrusTest;
@@ -15,7 +16,7 @@ import static com.consol.citrus.DefaultTestActionBuilder.action;
 import static com.consol.citrus.dsl.MessageSupport.MessageBodySupport.fromBody;
 import static com.consol.citrus.http.actions.HttpActionBuilder.http;
 
-public class DuckActionsFlyTest extends TestNGCitrusSpringSupport {
+public class DuckActionsFlyTest extends DuckActionClient {
     @Test(description = "Проверка того, что уточка полетела, существующий id с активными крыльями")
     @CitrusTest
     public void successfulFly(@Optional @CitrusResource TestCaseRunner runner) {
@@ -41,49 +42,6 @@ public class DuckActionsFlyTest extends TestNGCitrusSpringSupport {
         String id = extractId(runner).toString();
         duckFly(runner, id);
         validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"Wings are not detected\"\n" + "}");
-    }
-
-    public void duckFly(TestCaseRunner runner, String id) {
-        runner.$(http().client("http://localhost:2222")
-                .send()
-                .get("/api/duck/action/fly")
-                .queryParam("id", id));
-    }
-
-    public void validateResponse(TestCaseRunner runner, HttpStatus httpStatus, String responseMessage) {
-        runner.$(http().client("http://localhost:2222")
-                .receive()
-                .response(httpStatus)
-                .message()
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(responseMessage));
-    }
-
-    public void createDuck(TestCaseRunner runner, String color, double height, String material, String sound, String wingsState){
-        runner.$(http().client("http://localhost:2222")
-                .send()
-                .post("/api/duck/create")
-                .message()
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body("{\n" +
-                        "\"color\": \"" + color + "\",\n" +
-                        "\"height\": " + height + ",\n" +
-                        "\"material\": \"" + material + "\",\n" +
-                        "\"sound\": \"" + sound + "\",\n" +
-                        "\"wingsState\": \"" + wingsState + "\"\n" + "}"));
-    }
-
-    private AtomicInteger extractId(TestCaseRunner runner) {
-        AtomicInteger id = new AtomicInteger();
-        runner.$(http().client("http://localhost:2222")
-                .receive()
-                .response(HttpStatus.OK)
-                .message()
-                .extract(fromBody().expression("$.id", "duckId")));
-        runner.$(action(context -> {
-            id.set(context.getVariable("${duckId}", int.class));
-        }));
-        return id;
     }
 }
 
