@@ -19,14 +19,14 @@ public class DuckCreateTest extends DuckActionClient {
     @CitrusTest
     public void successfulCreateWithMaterialRubber(@Optional @CitrusResource TestCaseRunner runner) {
         createDuck(runner, "yellow", 0.04, "rubber", "quack", "ACTIVE");
-        validateWithMaterial(runner, "yellow", "0.04", "rubber", "quack", "ACTIVE");
+        validateAllProperties(runner, "yellow", "0.04", "rubber", "quack", "ACTIVE");
     }
 
     @Test(description = "Проверка того, что создалась уточка c material = wood")
     @CitrusTest
     public void successfulCreateWithMaterialWood(@Optional @CitrusResource TestCaseRunner runner) {
         createDuck(runner, "yellow", 0.08, "wood", "quack", "ACTIVE");
-        validateWithMaterial(runner, "yellow", "0.08", "wood", "quack", "ACTIVE");
+        validateAllProperties(runner, "yellow", "0.08", "wood", "quack", "ACTIVE");
     }
 }
 

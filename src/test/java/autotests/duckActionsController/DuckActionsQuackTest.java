@@ -20,11 +20,7 @@ public class DuckActionsQuackTest extends DuckActionClient {
     @Test(description = "Проверка того, что уточка издает корректный звук при корректном чётном id")
     @CitrusTest
     public void quackDuckWithEvenId(@Optional @CitrusResource TestCaseRunner runner) {
-        AtomicInteger id;
-        do {
-            createDuck(runner, "yellow", 0.07, "wood", "quack", "ACTIVE");
-            id = extractId(runner);
-        } while (id.get() % 2 != 0);
+        AtomicInteger id = createDuckWithEvenId(runner);
         duckQuack(runner, id.toString(), 2, 3);
         validateResponse(runner, HttpStatus.OK, "{\n" + " \"sound\": \"quack-quack-quack, quack-quack-quack\"\n" + "}");
     }
@@ -32,11 +28,7 @@ public class DuckActionsQuackTest extends DuckActionClient {
     @Test(description = "Проверка того, что уточка издает корректный звук при корректном нечётном id")
     @CitrusTest
     public void quackDuckWithOddId(@Optional @CitrusResource TestCaseRunner runner) {
-        AtomicInteger id;
-        do {
-            createDuck(runner, "yellow", 0.07, "wood", "quack", "ACTIVE");
-            id = extractId(runner);
-        } while (id.get() % 2 == 0);
+        AtomicInteger id = createDuckWithOddId(runner);
         duckQuack(runner, id.toString(), 2, 3);
         validateResponse(runner, HttpStatus.OK, "{\n" + " \"sound\": \"quack-quack-quack, quack-quack-quack\"\n" + "}");
     }
