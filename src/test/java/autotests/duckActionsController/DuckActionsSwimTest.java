@@ -1,5 +1,8 @@
 package autotests.duckActionsController;
 
+import autotests.Payloads.Duck;
+import autotests.Payloads.Message;
+import autotests.Payloads.WingState;
 import clients.DuckActionClient;
 import com.consol.citrus.TestCaseRunner;
 import com.consol.citrus.annotations.CitrusResource;
@@ -20,18 +23,21 @@ public class DuckActionsSwimTest extends DuckActionClient {
     @Test(description = "Проверка того, что уточка поплыла, существующий id")
     @CitrusTest
     public void swimDuckWithExistingId(@Optional @CitrusResource TestCaseRunner runner) {
-        createDuck(runner,"yellow", 0.07, "rubber", "quack", "FIXED");
+        Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
+        createDuck(runner, duck);
         String duckId = extractId(runner).toString();
         duckSwim(runner, duckId);
-        validateResponse(runner, HttpStatus.OK, "{\n" + " \"message\": \"I'm swimming\"\n" + "}");
+        Message message = new Message().message("I'm swimming");
+        validateResponse(runner, message);
     }
 
     @Test(description = "Проверка того, поплыла ли уточка, несуществующий id")
     @CitrusTest
     public void swimDuckWithNonExistingId(@Optional @CitrusResource TestCaseRunner runner) {
-        createDuck(runner,"yellow", 0.07, "rubber", "quack", "FIXED");
+        Duck duck = new Duck().color("yellow").height(0.04).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
+        createDuck(runner, duck);
         String duckId = Integer.toString(extractId(runner).incrementAndGet());
         duckSwim(runner, duckId);
-        validateResponse(runner, HttpStatus.NO_CONTENT, String.format("{\n" + " \"message\": \"duck with id=%s is not found\"\n" + "}", duckId));
+        validateResponse(runner, "duckActionController/swimNonExistingId.json");
     }
 }
