@@ -22,7 +22,7 @@ public class DuckCreateTest extends DuckActionClient {
     public void successfulCreateWithMaterialRubber(@Optional @CitrusResource TestCaseRunner runner) {
         Duck duck = new Duck().color("yellow").height(0.04).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
         createDuck(runner, duck);
-        validateResponse(runner, duck);
+        validateCreateAndGetId(runner, "duckController/duckRubber.json");
     }
 
     @Test(description = "Проверка того, что создалась уточка c material = wood")
@@ -30,7 +30,7 @@ public class DuckCreateTest extends DuckActionClient {
     public void successfulCreateWithMaterialWood(@Optional @CitrusResource TestCaseRunner runner) {
         Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
         createDuck(runner, duck);
-        validateResponse(runner, duck);
+        validateCreateAndGetId(runner, "duckController/duckWood.json");
     }
 }
 

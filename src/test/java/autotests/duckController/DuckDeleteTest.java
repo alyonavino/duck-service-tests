@@ -1,22 +1,17 @@
 package autotests.duckController;
 
 import autotests.Payloads.Duck;
+import autotests.Payloads.Message;
 import autotests.Payloads.WingState;
 import clients.DuckActionClient;
 import com.consol.citrus.TestCaseRunner;
 import com.consol.citrus.annotations.CitrusResource;
 import com.consol.citrus.annotations.CitrusTest;
-import com.consol.citrus.testng.spring.TestNGCitrusSpringSupport;
+
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Test;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.consol.citrus.DefaultTestActionBuilder.action;
-import static com.consol.citrus.dsl.MessageSupport.MessageBodySupport.fromBody;
-import static com.consol.citrus.http.actions.HttpActionBuilder.http;
 
 public class DuckDeleteTest extends DuckActionClient {
     @Test(description = "Проверка того, что удалили уточку")
@@ -26,7 +21,8 @@ public class DuckDeleteTest extends DuckActionClient {
         createDuck(runner, duck);
         String id = extractId(runner).toString();
         duckDelete(runner,id);
-        validateResponse(runner);
+        Message message = new Message().message("Duck is deleted");
+        validateResponse(runner, message);
     }
 }
 
