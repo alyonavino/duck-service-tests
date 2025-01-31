@@ -2,6 +2,10 @@ plugins {
     id 'java'
 }
 
+plugins {
+    id 'io.qameta.allure' version '2.9.6'
+}
+
 group = 'org.example'
 version = '1.0-SNAPSHOT'
 
@@ -18,6 +22,8 @@ dependencies {
     testImplementation group: 'org.slf4j', name: 'slf4j-reload4j', version: '2.0.7'
     testCompileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.28'
     testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.28'
+    testImplementation group: 'com.h2database', name: 'h2', version: '1.4.196'
+    testImplementation group: 'com.consol.citrus', name: 'citrus-sql', version: '3.4.0'
 }
 
 test {

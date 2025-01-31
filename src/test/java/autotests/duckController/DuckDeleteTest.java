@@ -8,21 +8,30 @@ import com.consol.citrus.TestCaseRunner;
 import com.consol.citrus.annotations.CitrusResource;
 import com.consol.citrus.annotations.CitrusTest;
 
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Test;
 
+import static com.consol.citrus.actions.ExecuteSQLAction.Builder.sql;
+import static com.consol.citrus.actions.ExecuteSQLQueryAction.Builder.query;
 
+@Epic("Тесты на duck-controller")
+@Feature("Эндпоинт /api/duck/delete")
 public class DuckDeleteTest extends DuckActionClient {
     @Test(description = "Проверка того, что удалили уточку")
     @CitrusTest
     public void successfulDelete(@Optional @CitrusResource TestCaseRunner runner) {
-        Duck duck = new Duck().color("yellow").height(0.04).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
-        createDuck(runner, duck);
-        String id = extractId(runner).toString();
-        duckDelete(runner,id);
-        Message message = new Message().message("Duck is deleted");
-        validateResponse(runner, message);
+        runner.variable("id", "citrus:randomNumber(10,true)");
+        Duck duck = new Duck().color("yellow").height(10.0).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
+        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
+                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
+                ",'" + duck.wingsState() + "');");
+        duckDelete(runner);
+        validateResponse(runner, HttpStatus.OK, "{" + " \"message\": \"Duck is deleted\"" +
+                "}");
+
     }
 }
 

@@ -10,16 +10,20 @@ import com.consol.citrus.message.MessageType;
 import com.consol.citrus.message.builder.ObjectMappingPayloadBuilder;
 import com.consol.citrus.testng.spring.TestNGCitrusSpringSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.qameta.allure.Step;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Description;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.consol.citrus.DefaultTestActionBuilder.action;
+import static com.consol.citrus.actions.ExecuteSQLAction.Builder.sql;
+import static com.consol.citrus.actions.ExecuteSQLQueryAction.Builder.query;
 import static com.consol.citrus.dsl.JsonPathSupport.jsonPath;
 import static com.consol.citrus.dsl.MessageSupport.MessageBodySupport.fromBody;
 import static com.consol.citrus.http.actions.HttpActionBuilder.http;
@@ -28,8 +32,30 @@ import static com.consol.citrus.http.actions.HttpActionBuilder.http;
 public class DuckActionClient extends TestNGCitrusSpringSupport {
     @Autowired
     protected HttpClient duckService;
+    @Autowired
+    protected SingleConnectionDataSource testDb;
+
+    public void databaseUpdate(TestCaseRunner runner, String sql) {
+        runner.$(sql(testDb)
+                .statement(sql));
+    }
+
+    protected void validateDuckInDatabase(TestCaseRunner runner, String id, String color, String height, String material, String sound, String wingsState) {
+        runner.$(query(testDb)
+                .statement("SELECT * FROM DUCK WHERE ID=" + id)
+                .validate("COLOR", color)
+                .validate("HEIGHT", height)
+                .validate("MATERIAL", material)
+                .validate("SOUND", sound)
+                .validate("WINGS_STATE", wingsState));
+    }
+
+   public void createDuckInBd(TestCaseRunner runner, String sql) {
+        runner.$(sql(testDb).statement(sql));
+   }
 
     //    создание уточки
+    @Step("Эндпоинт для создания уточки")
     public void createDuck(TestCaseRunner runner, Object body) {
         runner.$(http().client(duckService)
                 .send()
@@ -40,27 +66,30 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
     }
 
     // удаление уточки
-    public void duckDelete(TestCaseRunner runner, String id) {
+    @Step("Эндпоинт для удаления уточки")
+    public void duckDelete(TestCaseRunner runner) {
         runner.$(http().client(duckService)
                 .send()
                 .delete("/api/duck/delete")
-                .queryParam("id", id));
+                .queryParam("id", "${id}"));
     }
 
     // обновление свойств уточки
-    public void duckUpdate(TestCaseRunner runner, String color, double height, String id, String material, String sound, String wingsState) {
+    @Step("Эндпоинт для обновления свойств уточки")
+    public void duckUpdate(TestCaseRunner runner, String color, double height, String material, String sound, WingState wingsState) {
         runner.$(http().client(duckService)
                 .send()
                 .put("/api/duck/update")
                 .queryParam("color", color)
                 .queryParam("height", String.valueOf(height))
-                .queryParam("id", id)
                 .queryParam("material", material)
                 .queryParam("sound", sound)
-                .queryParam("wingsState", wingsState));
+                .queryParam("wingsState", String.valueOf(wingsState))
+                .queryParam("id", "${id}"));
     }
 
     // заставить уточку полетать
+    @Step("Эндпоинт для того, чтобы заставить уточку полетать")
     public void duckFly(TestCaseRunner runner, String id) {
         runner.$(http().client(duckService)
                 .send()
@@ -69,6 +98,7 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
     }
 
     // заставить уточку крякать
+    @Step("Эндпоинт для того, чтобы заставить уточку крякать")
     public void duckQuack(TestCaseRunner runner, String id, int repetitionCount, int soundCount) {
         runner.$(http().client(duckService)
                 .send()
@@ -79,6 +109,7 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
     }
 
     // заставить уточку плавать
+    @Step("Эндпоинт для того, чтобы заставить уточку плавать")
     public void duckSwim(TestCaseRunner runner, String id) {
         runner.$(http().client(duckService)
                 .send()
@@ -87,35 +118,13 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
     }
 
     // получение свойств уточки
+    @Step("Эндпоинт для того, чтобы получить свойства уточки")
     public void duckProperties(TestCaseRunner runner, String id) {
         runner.$(http().client(duckService)
                 .send()
                 .get("/api/duck/action/properties")
                 .queryParam("id", id));
     }
-
-    // цикл для чётного id
-    public AtomicInteger createDuckWithEvenId(TestCaseRunner runner) {
-        AtomicInteger id;
-        Duck duck = new Duck().color("yellow").height(0.07).material("wood").sound("quack").wingsState(WingState.ACTIVE);
-        do {
-            createDuck(runner, duck);
-            id = extractId(runner);
-        } while (id.get() % 2 != 0);
-        return id;
-    }
-
-    // цикл для нечётного id
-    public AtomicInteger createDuckWithOddId(TestCaseRunner runner) {
-        AtomicInteger id;
-        Duck duck = new Duck().color("yellow").height(0.04).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
-        do {
-            createDuck(runner, duck);
-            id = extractId(runner);
-        } while (id.get() % 2 == 0);
-        return id;
-    }
-
 
     @Description("Валидация с передачей ответа String'ой")
     public void validateResponse(TestCaseRunner runner, HttpStatus httpStatus, String responseMessage) {
@@ -172,6 +181,18 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
         runner.$(action(context -> {
             id.set(context.getVariable("${duckId}", int.class));
         }));
+        return id;
+    }
+
+//  получение рандомного id (условие true = для четного id, условие false = для нечетного id)
+    public AtomicInteger getRandomId(TestCaseRunner runner, boolean isEven) {
+        AtomicInteger id = new AtomicInteger();
+        do {
+            runner.variable("id", "citrus:randomNumber(3,true)");
+            runner.$(action(context -> {
+                id.set(context.getVariable("${id}", int.class));
+            }));
+        } while (isEven ? id.get() % 2 != 0 : id.get() % 2 == 0);
         return id;
     }
 
