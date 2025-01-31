@@ -1,5 +1,6 @@
 package autotests.duckActionsController;
 
+import autotests.Payloads.Sound;
 import clients.DuckActionClient;
 import com.consol.citrus.TestCaseRunner;
 import com.consol.citrus.annotations.CitrusResource;
@@ -22,7 +23,8 @@ public class DuckActionsQuackTest extends DuckActionClient {
     public void quackDuckWithEvenId(@Optional @CitrusResource TestCaseRunner runner) {
         AtomicInteger id = createDuckWithEvenId(runner);
         duckQuack(runner, id.toString(), 2, 3);
-        validateResponse(runner, HttpStatus.OK, "{\n" + " \"sound\": \"quack-quack-quack, quack-quack-quack\"\n" + "}");
+        Sound sound = new Sound().sound("quack-quack-quack, quack-quack-quack");
+        validateResponse(runner, sound);
     }
 
     @Test(description = "Проверка того, что уточка издает корректный звук при корректном нечётном id")
@@ -30,6 +32,7 @@ public class DuckActionsQuackTest extends DuckActionClient {
     public void quackDuckWithOddId(@Optional @CitrusResource TestCaseRunner runner) {
         AtomicInteger id = createDuckWithOddId(runner);
         duckQuack(runner, id.toString(), 2, 3);
-        validateResponse(runner, HttpStatus.OK, "{\n" + " \"sound\": \"quack-quack-quack, quack-quack-quack\"\n" + "}");
+        Sound sound = new Sound().sound("quack-quack-quack, quack-quack-quack");
+        validateResponse(runner, sound);
     }
 }

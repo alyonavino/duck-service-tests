@@ -1,5 +1,7 @@
 package autotests.duckActionsController;
 
+import autotests.Payloads.Duck;
+import autotests.Payloads.WingState;
 import clients.DuckActionClient;
 import com.consol.citrus.TestCaseRunner;
 import com.consol.citrus.annotations.CitrusResource;
@@ -24,7 +26,8 @@ public class DuckPropertiesTest extends DuckActionClient {
     public void getWoodDuckPropertiesEvenId(@Optional @CitrusResource TestCaseRunner runner) {
         AtomicInteger id;
         do {
-            createDuck(runner, "yellow", 0.07, "wood", "quack", "ACTIVE");
+            Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
+            createDuck(runner, duck);
             id = extractId(runner);
         } while (id.get() % 2 != 0);
         duckProperties(runner, id.toString());
@@ -36,7 +39,8 @@ public class DuckPropertiesTest extends DuckActionClient {
     public void getRubberDuckPropertiesOddId(@Optional @CitrusResource TestCaseRunner runner) {
         AtomicInteger id;
         do {
-            createDuck(runner, "yellow", 0.07, "rubber", "quack", "ACTIVE");
+            Duck duck = new Duck().color("yellow").height(0.04).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
+            createDuck(runner, duck);
             id = extractId(runner);
         } while (id.get() % 2 == 0);
         duckProperties(runner, id.toString());

@@ -1,0 +1,3 @@
+{
+  "message": "Duck with id = ${duckId} is updated"
+}

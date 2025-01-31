@@ -1,12 +1,18 @@
 package clients;
 
 import autotests.EndpointConfig;
+import autotests.Payloads.Duck;
+import autotests.Payloads.WingState;
 import com.consol.citrus.TestCaseRunner;
 import com.consol.citrus.dsl.JsonPathSupport;
 import com.consol.citrus.http.client.HttpClient;
 import com.consol.citrus.message.MessageType;
+import com.consol.citrus.message.builder.ObjectMappingPayloadBuilder;
 import com.consol.citrus.testng.spring.TestNGCitrusSpringSupport;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Description;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -24,18 +30,13 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
     protected HttpClient duckService;
 
     //    создание уточки
-    public void createDuck(TestCaseRunner runner, String color, double height, String material, String sound, String wingsState) {
+    public void createDuck(TestCaseRunner runner, Object body) {
         runner.$(http().client(duckService)
                 .send()
                 .post("/api/duck/create")
                 .message()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body("{\n" +
-                        "\"color\": \"" + color + "\",\n" +
-                        "\"height\": " + height + ",\n" +
-                        "\"material\": \"" + material + "\",\n" +
-                        "\"sound\": \"" + sound + "\",\n" +
-                        "\"wingsState\": \"" + wingsState + "\"\n" + "}"));
+                .body(new ObjectMappingPayloadBuilder(body, new ObjectMapper())));
     }
 
     // удаление уточки
@@ -96,35 +97,58 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
     // цикл для чётного id
     public AtomicInteger createDuckWithEvenId(TestCaseRunner runner) {
         AtomicInteger id;
+        Duck duck = new Duck().color("yellow").height(0.07).material("wood").sound("quack").wingsState(WingState.ACTIVE);
         do {
-            createDuck(runner, "yellow", 0.07, "wood", "quack", "ACTIVE");
+            createDuck(runner, duck);
             id = extractId(runner);
         } while (id.get() % 2 != 0);
         return id;
     }
 
-// цикл для нечётного id
+    // цикл для нечётного id
     public AtomicInteger createDuckWithOddId(TestCaseRunner runner) {
         AtomicInteger id;
+        Duck duck = new Duck().color("yellow").height(0.04).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
         do {
-            createDuck(runner, "yellow", 0.07, "wood", "quack", "ACTIVE");
+            createDuck(runner, duck);
             id = extractId(runner);
         } while (id.get() % 2 == 0);
         return id;
     }
 
-// валидирование ответа для всех методов
-public void validateResponse(TestCaseRunner runner, HttpStatus httpStatus, String responseMessage) {
-    runner.$(http().client(duckService)
-            .receive()
-            .response(httpStatus)
-            .message()
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body(responseMessage));
-}
 
-// проверка характеристик
-public void validateProperties(TestCaseRunner runner, String color, String height, String material, String sound, String wingsState) {
+    @Description("Валидация с передачей ответа String'ой")
+    public void validateResponse(TestCaseRunner runner, HttpStatus httpStatus, String responseMessage) {
+        runner.$(http().client(duckService)
+                .receive()
+                .response(HttpStatus.OK)
+                .message()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(responseMessage));
+    }
+
+    @Description("Валидация с передачей ответа из папки resources")
+    public void validateResponse(TestCaseRunner runner, String expectedPayload) {
+        runner.$(http().client(duckService)
+                .receive()
+                .response()
+                .message().type(MessageType.JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(new ClassPathResource(expectedPayload)));
+    }
+
+    @Description("Валидация с передачей ответа из папки Payloads")
+    public void validateResponse(TestCaseRunner runner, Object expectedPayload) {
+        runner.$(http().client(duckService)
+                .receive()
+                .response(HttpStatus.OK)
+                .message().type(MessageType.JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(new ObjectMappingPayloadBuilder(expectedPayload, new ObjectMapper())));
+    }
+
+    // проверка характеристик
+    public void validateProperties(TestCaseRunner runner, String color, String height, String material, String sound, String wingsState) {
         runner.$(http().client(duckService)
                 .receive()
                 .response(HttpStatus.OK)
@@ -135,35 +159,28 @@ public void validateProperties(TestCaseRunner runner, String color, String heigh
                 .validate(JsonPathSupport.jsonPath().expression("$.material", material))
                 .validate(JsonPathSupport.jsonPath().expression("$.sound", sound))
                 .validate(JsonPathSupport.jsonPath().expression("$.wingsState", wingsState)));
-}
+    }
 
-// проверка на правильное создание уточки со всеми свойствами
-public void validateAllProperties(TestCaseRunner runner, String color, String height, String material, String sound, String wingsState) {
-    runner.$(http().client(duckService)
-            .receive()
-            .response(HttpStatus.OK)
-            .message()
-            .type(MessageType.JSON)
-            .validate(jsonPath().expression("$.color", color))
-            .validate(jsonPath().expression("$.height", height))
-            .validate(jsonPath().expression("$.material", material))
-            .validate(jsonPath().expression("$.sound", sound))
-            .validate(jsonPath().expression("$.wingsState", wingsState)));
-}
+    // извлечение id для всех методов
+    public AtomicInteger extractId(TestCaseRunner runner) {
+        AtomicInteger id = new AtomicInteger();
+        runner.$(http().client(duckService)
+                .receive()
+                .response(HttpStatus.OK)
+                .message()
+                .extract(fromBody().expression("$.id", "duckId")));
+        runner.$(action(context -> {
+            id.set(context.getVariable("${duckId}", int.class));
+        }));
+        return id;
+    }
 
-// извлечение id для всех методов
-public AtomicInteger extractId(TestCaseRunner runner) {
-    AtomicInteger id = new AtomicInteger();
-    runner.$(http().client(duckService)
-            .receive()
-            .response(HttpStatus.OK)
-            .message()
-            .extract(fromBody().expression("$.id", "duckId")));
-    runner.$(action(context -> {
-        id.set(context.getVariable("${duckId}", int.class));
-    }));
-    return id;
-}
-
-
+    public void validateCreateAndGetId(TestCaseRunner runner, String responseMessage) {
+        runner.$(http().client(duckService)
+                .receive()
+                .response(HttpStatus.OK)
+                .message()
+                .extract(fromBody().expression("$.id", "duckId"))
+                .body(new ClassPathResource(responseMessage)));
+    }
 }
