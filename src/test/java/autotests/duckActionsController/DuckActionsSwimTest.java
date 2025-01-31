@@ -9,6 +9,7 @@ import com.consol.citrus.annotations.CitrusResource;
 import com.consol.citrus.annotations.CitrusTest;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Test;
 
@@ -21,7 +22,7 @@ public class DuckActionsSwimTest extends DuckActionClient {
     @CitrusTest
     public void swimDuckWithExistingId(@Optional @CitrusResource TestCaseRunner runner) {
         runner.variable("id", "citrus:randomNumber(10,true)");
-        runner.$(doFinally().actions(action -> createDuckInBd(runner, "DELETE FROM DUCK WHERE ID = ${id}")));
+        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
 
         Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
         createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
@@ -29,15 +30,15 @@ public class DuckActionsSwimTest extends DuckActionClient {
                 ",'" + duck.wingsState() + "');");
 
         duckSwim(runner, "${id}");
-        Message message = new Message().message("I'm swimming");
-        validateResponse(runner, message);
+        validateResponse(runner, "{" + " \"message\": \"I'm swimming\"" +
+                "}", HttpStatus.OK);
     }
 
-    @Test(description = "Проверка того, поплыла ли уточка, несуществующий id")
+    @Test(description = "Проверка того, что уточка не поплыла, несуществующий id")
     @CitrusTest
     public void swimDuckWithNonExistingId(@Optional @CitrusResource TestCaseRunner runner) {
         runner.variable("id", "citrus:randomNumber(10,true)");
-        runner.$(doFinally().actions(action -> createDuckInBd(runner, "DELETE FROM DUCK WHERE ID = ${id}")));
+        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
 
         Duck duck = new Duck().color("yellow").height(0.04).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
         createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
@@ -46,6 +47,6 @@ public class DuckActionsSwimTest extends DuckActionClient {
 
         databaseUpdate(runner, "DELETE FROM DUCK WHERE id = ${id}");
         duckSwim(runner, "${id}");
-        validateResponse(runner, "duckActionController/swimNonExistingId.json");
+        validateResponse(runner, "duckActionController/swimNonExistingId.json", HttpStatus.NO_CONTENT);
     }
 }

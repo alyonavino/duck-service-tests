@@ -9,6 +9,7 @@ import com.consol.citrus.annotations.CitrusResource;
 import com.consol.citrus.annotations.CitrusTest;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Test;
 
@@ -23,23 +24,23 @@ public class DuckActionsQuackTest extends DuckActionClient {
     @CitrusTest
     public void quackDuckWithEvenId(@Optional @CitrusResource TestCaseRunner runner) {
        AtomicInteger id = getRandomId(runner, true);
-       runner.$(doFinally().actions(action -> createDuckInBd(runner, "DELETE FROM DUCK WHERE ID = ${id}")));
+       runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
 
-        Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
+       Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
+       createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
                 "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
                 ",'" + duck.wingsState() + "');");
 
-        duckQuack(runner, id.toString(), 2, 3);
-        Sound sound = new Sound().sound("quack-quack-quack, quack-quack-quack");
-        validateResponse(runner, sound);
+       duckQuack(runner, id.toString(), 2, 3);
+       validateResponse(runner, "{" + " \"message\": \"quack-quack-quack, quack-quack-quack\"" +
+                "}", HttpStatus.OK);
     }
 
     @Test(description = "Проверка того, что уточка издает корректный звук при корректном нечётном id")
     @CitrusTest
     public void quackDuckWithOddId(@Optional @CitrusResource TestCaseRunner runner) {
         AtomicInteger id = getRandomId(runner, false);
-        runner.$(doFinally().actions(action -> createDuckInBd(runner, "DELETE FROM DUCK WHERE ID = ${id}")));
+        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
 
         Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
         createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
@@ -48,6 +49,7 @@ public class DuckActionsQuackTest extends DuckActionClient {
 
         duckQuack(runner, id.toString(), 2, 3);
         Sound sound = new Sound().sound("quack-quack-quack, quack-quack-quack");
-        validateResponse(runner, sound);
+        validateResponse(runner, "{" + " \"message\": \"quack-quack-quack, quack-quack-quack\"" +
+                "}", HttpStatus.OK);
     }
 }

@@ -35,11 +35,13 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
     @Autowired
     protected SingleConnectionDataSource testDb;
 
+    @Step("Обновление базы данных")
     public void databaseUpdate(TestCaseRunner runner, String sql) {
         runner.$(sql(testDb)
                 .statement(sql));
     }
 
+    @Step("Проверяем уточку в базе данных")
     protected void validateDuckInDatabase(TestCaseRunner runner, String id, String color, String height, String material, String sound, String wingsState) {
         runner.$(query(testDb)
                 .statement("SELECT * FROM DUCK WHERE ID=" + id)
@@ -50,6 +52,13 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
                 .validate("WINGS_STATE", wingsState));
     }
 
+    @Step("Удаление уточки из базы данных")
+    public void databaseDelete(TestCaseRunner runner, String id) {
+        runner.$(sql(testDb)
+                .statement("DELETE FROM DUCK WHERE ID=" + id));
+    }
+
+    @Step("Создание уточки в базе данных")
    public void createDuckInBd(TestCaseRunner runner, String sql) {
         runner.$(sql(testDb).statement(sql));
    }
@@ -126,37 +135,37 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
                 .queryParam("id", id));
     }
 
-    @Description("Валидация с передачей ответа String'ой")
-    public void validateResponse(TestCaseRunner runner, HttpStatus httpStatus, String responseMessage) {
+    @Step("Валидация с передачей ответа String'ой")
+    public void validateResponse(TestCaseRunner runner, String expectedMessage, HttpStatus httpStatus) {
         runner.$(http().client(duckService)
                 .receive()
-                .response(HttpStatus.OK)
+                .response(httpStatus)
                 .message()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(responseMessage));
+                .body(expectedMessage));
     }
 
-    @Description("Валидация с передачей ответа из папки resources")
-    public void validateResponse(TestCaseRunner runner, String expectedPayload) {
+    @Step("Валидация с передачей ответа из папки resources")
+    public void validateResponseFromResources(TestCaseRunner runner, String expectedPayload, HttpStatus httpStatus) {
         runner.$(http().client(duckService)
                 .receive()
-                .response()
+                .response(httpStatus)
                 .message().type(MessageType.JSON)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(new ClassPathResource(expectedPayload)));
     }
 
-    @Description("Валидация с передачей ответа из папки Payloads")
-    public void validateResponse(TestCaseRunner runner, Object expectedPayload) {
+    @Step("Валидация с передачей ответа из папки Payloads")
+    public void validateResponseFromPayloads(TestCaseRunner runner, Object expectedPayload, HttpStatus httpStatus) {
         runner.$(http().client(duckService)
                 .receive()
-                .response(HttpStatus.OK)
+                .response(httpStatus)
                 .message().type(MessageType.JSON)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(new ObjectMappingPayloadBuilder(expectedPayload, new ObjectMapper())));
     }
 
-    // проверка характеристик
+    @Step("Проверка все ли свойства такие, какие нужны по задаче")
     public void validateProperties(TestCaseRunner runner, String color, String height, String material, String sound, String wingsState) {
         runner.$(http().client(duckService)
                 .receive()
@@ -170,7 +179,7 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
                 .validate(JsonPathSupport.jsonPath().expression("$.wingsState", wingsState)));
     }
 
-    // извлечение id для всех методов
+    @Step("Извлечение id для всех методов")
     public AtomicInteger extractId(TestCaseRunner runner) {
         AtomicInteger id = new AtomicInteger();
         runner.$(http().client(duckService)
@@ -184,7 +193,7 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
         return id;
     }
 
-//  получение рандомного id (условие true = для четного id, условие false = для нечетного id)
+    @Step("Получение рандомного id (условие true = для четного id, условие false = для нечетного id")
     public AtomicInteger getRandomId(TestCaseRunner runner, boolean isEven) {
         AtomicInteger id = new AtomicInteger();
         do {
@@ -196,6 +205,7 @@ public class DuckActionClient extends TestNGCitrusSpringSupport {
         return id;
     }
 
+    @Step("Извлечение id и проверка ответа")
     public void validateCreateAndGetId(TestCaseRunner runner, String responseMessage) {
         runner.$(http().client(duckService)
                 .receive()

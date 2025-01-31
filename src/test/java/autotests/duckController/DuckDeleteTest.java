@@ -16,6 +16,7 @@ import org.testng.annotations.Test;
 
 import static com.consol.citrus.actions.ExecuteSQLAction.Builder.sql;
 import static com.consol.citrus.actions.ExecuteSQLQueryAction.Builder.query;
+import static com.consol.citrus.container.FinallySequence.Builder.doFinally;
 
 @Epic("Тесты на duck-controller")
 @Feature("Эндпоинт /api/duck/delete")
@@ -24,13 +25,14 @@ public class DuckDeleteTest extends DuckActionClient {
     @CitrusTest
     public void successfulDelete(@Optional @CitrusResource TestCaseRunner runner) {
         runner.variable("id", "citrus:randomNumber(10,true)");
+        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
         Duck duck = new Duck().color("yellow").height(10.0).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
         createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
                 "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
                 ",'" + duck.wingsState() + "');");
         duckDelete(runner);
-        validateResponse(runner, HttpStatus.OK, "{" + " \"message\": \"Duck is deleted\"" +
-                "}");
+        validateResponse(runner, "{" + " \"message\": \"Duck is deleted\"" +
+                "}", HttpStatus.OK);
 
     }
 }

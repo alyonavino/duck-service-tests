@@ -14,6 +14,7 @@ import org.testng.annotations.Optional;
 import org.testng.annotations.Test;
 
 import static com.consol.citrus.actions.ExecuteSQLAction.Builder.sql;
+import static com.consol.citrus.container.FinallySequence.Builder.doFinally;
 
 @Epic("Тесты на duck-controller")
 @Feature("Эндпоинт /api/duck/create")
@@ -21,17 +22,17 @@ public class DuckCreateTest extends DuckActionClient {
     @Test(description = "Проверка того, что создалась уточка c material = rubber")
     @CitrusTest
     public void successfulCreateWithMaterialRubber(@Optional @CitrusResource TestCaseRunner runner) {
+        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
         Duck duck = new Duck().color("yellow").height(0.04).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
         createDuck(runner, duck);
         String id = extractId(runner).toString();
         validateDuckInDatabase(runner, id, "yellow", "0.04", "rubber", "quack", "ACTIVE");
     }
 
-    @Epic("Тесты на duck-controller")
-    @Feature("Эндпоинт /api/duck/create")
     @Test(description = "Проверка того, что создалась уточка c material = wood")
     @CitrusTest
     public void successfulCreateWithMaterialWood(@Optional @CitrusResource TestCaseRunner runner) {
+        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
         Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
         createDuck(runner, duck);
         String id = extractId(runner).toString();

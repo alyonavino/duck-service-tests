@@ -8,6 +8,7 @@ import com.consol.citrus.annotations.CitrusResource;
 import com.consol.citrus.annotations.CitrusTest;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Test;
 
@@ -18,8 +19,8 @@ public class DuckActionsFlyTest extends DuckActionClient {
     @Test(description = "Проверка того, что уточка полетела, существующий id с активными крыльями")
     @CitrusTest
     public void successfulFly(@Optional @CitrusResource TestCaseRunner runner) {
-        runner.variable("id", "1234567");
-        runner.$(doFinally().actions(action -> createDuckInBd(runner, "DELETE FROM DUCK WHERE ID = ${id}")));
+        runner.variable("id", "citrus:randomNumber(10,true)");
+        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
 
         Duck duck = new Duck().color("yellow").height(15.0).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
 
@@ -28,14 +29,14 @@ public class DuckActionsFlyTest extends DuckActionClient {
                 ",'" + duck.wingsState() + "');");
 
         duckFly(runner, "${id}");
-        validateResponse(runner, "duckActionController/flyWithActiveWings.json");
+        validateResponseFromResources(runner, "duckActionController/flyWithActiveWings.json", HttpStatus.OK);
     }
 
     @Test(description = "Проверка того, что уточка не полетела, существующий id со связанными крыльями")
     @CitrusTest
     public void notSuccessfulFly(@Optional @CitrusResource TestCaseRunner runner) {
-        runner.variable("id", "1234567");
-        runner.$(doFinally().actions(action -> createDuckInBd(runner, "DELETE FROM DUCK WHERE ID = ${id}")));
+        runner.variable("id", "citrus:randomNumber(10,true)");
+        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
 
         Duck duck = new Duck().color("yellow").height(15.0).material("rubber").sound("quack").wingsState(WingState.FIXED);
 
@@ -44,14 +45,14 @@ public class DuckActionsFlyTest extends DuckActionClient {
                 ",'" + duck.wingsState() + "');");
 
         duckFly(runner, "${id}");
-        validateResponse(runner, "duckActionController/flyWithFixedWings.json");
+        validateResponseFromResources(runner, "duckActionController/flyWithFixedWings.json", HttpStatus.OK);
     }
 
     @Test(description = "Проверка того, что крылья в неопределенном состоянии с существующим id")
     @CitrusTest
     public void undefinedWingsState(@Optional @CitrusResource TestCaseRunner runner) {
-        runner.variable("id", "1234567");
-        runner.$(doFinally().actions(action -> createDuckInBd(runner, "DELETE FROM DUCK WHERE ID = ${id}")));
+        runner.variable("id", "citrus:randomNumber(10,true)");
+        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
 
         Duck duck = new Duck().color("yellow").height(15.0).material("rubber").sound("quack").wingsState(WingState.UNDEFINED);
 
@@ -60,7 +61,7 @@ public class DuckActionsFlyTest extends DuckActionClient {
                 ",'" + duck.wingsState() + "');");
 
         duckFly(runner, "${id}");
-        validateResponse(runner, "duckActionController/flyWithUndefinedWings.json");
+        validateResponseFromResources(runner, "duckActionController/flyWithUndefinedWings.json", HttpStatus.OK);
     }
 }
 

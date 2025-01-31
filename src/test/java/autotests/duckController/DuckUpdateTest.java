@@ -20,8 +20,8 @@ public class DuckUpdateTest extends DuckActionClient {
     @Test(description = "Проверка того, что уточке изменили цвет и её высоту")
     @CitrusTest
     public void successfulUpdateColorAndHeight(@Optional @CitrusResource TestCaseRunner runner) {
-        runner.variable("id", "1234567");
-        runner.$(doFinally().actions(action -> createDuckInBd(runner, "DELETE FROM DUCK WHERE ID = ${id}")));
+        runner.variable("id", "citrus:randomNumber(10,true)");
+        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
 
         Duck duck = new Duck().color("yellow").height(15.0).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
 
@@ -33,16 +33,16 @@ public class DuckUpdateTest extends DuckActionClient {
         duck.height(7.0);
 
         duckUpdate(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
-        validateResponse(runner, HttpStatus.OK, "{" +
-                "  \"message\": \"Duck with id = ${id} is updated\"" + "}");
+        validateResponse(runner,  "{" +
+                "  \"message\": \"Duck with id = ${id} is updated\"" + "}", HttpStatus.OK);
         validateDuckInDatabase(runner, "${id}", duck.color(), duck.height().toString(), duck.material(), duck.sound(), duck.wingsState().toString());
     }
 
     @Test(description = "Проверка того, что уточке изменили цвет и её звук")
     @CitrusTest
     public void successfulUpdateColorAndSound(@Optional @CitrusResource TestCaseRunner runner) {
-        runner.variable("id", "1234567");
-        runner.$(doFinally().actions(action -> createDuckInBd(runner, "DELETE FROM DUCK WHERE ID = ${id}")));
+        runner.variable("id", "citrus:randomNumber(10,true)");
+        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
 
         Duck duck = new Duck().color("black").height(10.0).material("wood").sound("quack").wingsState(WingState.ACTIVE);
 
@@ -54,8 +54,8 @@ public class DuckUpdateTest extends DuckActionClient {
         duck.sound("gav");
 
         duckUpdate(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
-        validateResponse(runner, HttpStatus.BAD_REQUEST, "{" +
-                "  \"message\": \"Duck with id = ${id} is not updated\"" + "}");
+        validateResponse(runner,  "{" +
+                "  \"message\": \"Duck with id = ${id} is not updated\"" + "}", HttpStatus.BAD_REQUEST);
         validateDuckInDatabase(runner, "${id}", duck.color(), duck.height().toString(), duck.material(), duck.sound(), duck.wingsState().toString());
     }
 }
