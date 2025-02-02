@@ -1,7 +1,6 @@
 package autotests.duckActionsController;
 
 import autotests.Payloads.Duck;
-import autotests.Payloads.Message;
 import autotests.Payloads.WingState;
 import clients.DuckActionClient;
 import com.consol.citrus.TestCaseRunner;
@@ -22,12 +21,10 @@ public class DuckActionsSwimTest extends DuckActionClient {
     @CitrusTest
     public void swimDuckWithExistingId(@Optional @CitrusResource TestCaseRunner runner) {
         runner.variable("id", "citrus:randomNumber(10,true)");
-        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
+        runner.$(doFinally().actions(action -> databaseDelete(runner)));
 
         Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
+        createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
 
         duckSwim(runner, "${id}");
         validateResponse(runner, "{" + " \"message\": \"I'm swimming\"" +
@@ -38,15 +35,11 @@ public class DuckActionsSwimTest extends DuckActionClient {
     @CitrusTest
     public void swimDuckWithNonExistingId(@Optional @CitrusResource TestCaseRunner runner) {
         runner.variable("id", "citrus:randomNumber(10,true)");
-        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
-
+        runner.$(doFinally().actions(action -> databaseDelete(runner)));
         Duck duck = new Duck().color("yellow").height(0.04).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
-
+        createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
         databaseUpdate(runner, "DELETE FROM DUCK WHERE id = ${id}");
         duckSwim(runner, "${id}");
-        validateResponse(runner, "duckActionController/swimNonExistingId.json", HttpStatus.NO_CONTENT);
+        validateResponseFromResources(runner, "duckActionController/swimNonExistingId.json", HttpStatus.NOT_FOUND);
     }
 }

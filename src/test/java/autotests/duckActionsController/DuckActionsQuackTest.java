@@ -1,7 +1,6 @@
 package autotests.duckActionsController;
 
 import autotests.Payloads.Duck;
-import autotests.Payloads.Sound;
 import autotests.Payloads.WingState;
 import clients.DuckActionClient;
 import com.consol.citrus.TestCaseRunner;
@@ -24,15 +23,11 @@ public class DuckActionsQuackTest extends DuckActionClient {
     @CitrusTest
     public void quackDuckWithEvenId(@Optional @CitrusResource TestCaseRunner runner) {
        AtomicInteger id = getRandomId(runner, true);
-       runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
-
+       runner.$(doFinally().actions(action -> databaseDelete(runner)));
        Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
-       createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
-
-       duckQuack(runner, id.toString(), 2, 3);
-       validateResponse(runner, "{" + " \"message\": \"quack-quack-quack, quack-quack-quack\"" +
+       createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
+       duckQuack(runner, id.toString(), 3, 2);
+       validateResponse(runner, "{" + " \"message\": \"quack-quack, quack-quack, quack-quack\"" +
                 "}", HttpStatus.OK);
     }
 
@@ -40,16 +35,11 @@ public class DuckActionsQuackTest extends DuckActionClient {
     @CitrusTest
     public void quackDuckWithOddId(@Optional @CitrusResource TestCaseRunner runner) {
         AtomicInteger id = getRandomId(runner, false);
-        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
-
+        runner.$(doFinally().actions(action -> databaseDelete(runner)));
         Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
-
-        duckQuack(runner, id.toString(), 2, 3);
-        Sound sound = new Sound().sound("quack-quack-quack, quack-quack-quack");
-        validateResponse(runner, "{" + " \"message\": \"quack-quack-quack, quack-quack-quack\"" +
+        createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
+        duckQuack(runner, id.toString(), 3, 2);
+        validateResponse(runner, "{" + " \"message\": \"quack-quack, quack-quack, quack-quack\"" +
                 "}", HttpStatus.OK);
     }
 }
