@@ -21,13 +21,9 @@ public class DuckUpdateTest extends DuckActionClient {
     @CitrusTest
     public void successfulUpdateColorAndHeight(@Optional @CitrusResource TestCaseRunner runner) {
         runner.variable("id", "citrus:randomNumber(10,true)");
-        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
-
+        runner.$(doFinally().actions(action -> databaseDelete(runner)));
         Duck duck = new Duck().color("yellow").height(15.0).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
-
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
+        createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
 
         duck.color("red");
         duck.height(7.0);
@@ -42,13 +38,9 @@ public class DuckUpdateTest extends DuckActionClient {
     @CitrusTest
     public void successfulUpdateColorAndSound(@Optional @CitrusResource TestCaseRunner runner) {
         runner.variable("id", "citrus:randomNumber(10,true)");
-        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
-
+        runner.$(doFinally().actions(action -> databaseDelete(runner)));
         Duck duck = new Duck().color("black").height(10.0).material("wood").sound("quack").wingsState(WingState.ACTIVE);
-
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
+        createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
 
         duck.color("red");
         duck.sound("gav");

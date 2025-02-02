@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 public class EndpointConfig {
-
     @Bean("duckService")
     public HttpClient duckService() {
         return new HttpClientBuilder()

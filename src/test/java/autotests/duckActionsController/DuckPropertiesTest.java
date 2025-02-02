@@ -23,12 +23,9 @@ public class DuckPropertiesTest extends DuckActionClient {
     @CitrusTest
     public void getWoodDuckPropertiesEvenId(@Optional @CitrusResource TestCaseRunner runner) {
         AtomicInteger id = getRandomId(runner, true);
-        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
-
+        runner.$(doFinally().actions(action -> databaseDelete(runner)));
         Duck duck = new Duck().color("yellow").height(0.04).material("wood").sound("quack").wingsState(WingState.ACTIVE);
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
+        createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
         duckProperties(runner, id.toString());
         validateResponseFromResources(runner, "duckActionController/propertiesWoodDuck.json", HttpStatus.OK);
     }
@@ -37,12 +34,9 @@ public class DuckPropertiesTest extends DuckActionClient {
     @CitrusTest
     public void getRubberDuckPropertiesOddId(@Optional @CitrusResource TestCaseRunner runner) {
         AtomicInteger id = getRandomId(runner, false);
-        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
-
+        runner.$(doFinally().actions(action -> databaseDelete(runner)));
         Duck duck = new Duck().color("yellow").height(0.07).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
+        createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
         duckProperties(runner, id.toString());
         validateResponseFromResources(runner, "duckActionController/propertiesRubberDuck.json", HttpStatus.OK);
     }

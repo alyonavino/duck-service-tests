@@ -1,7 +1,6 @@
 package autotests.duckController;
 
 import autotests.Payloads.Duck;
-import autotests.Payloads.Message;
 import autotests.Payloads.WingState;
 import clients.DuckActionClient;
 import com.consol.citrus.TestCaseRunner;
@@ -14,8 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Test;
 
-import static com.consol.citrus.actions.ExecuteSQLAction.Builder.sql;
-import static com.consol.citrus.actions.ExecuteSQLQueryAction.Builder.query;
 import static com.consol.citrus.container.FinallySequence.Builder.doFinally;
 
 @Epic("Тесты на duck-controller")
@@ -25,11 +22,9 @@ public class DuckDeleteTest extends DuckActionClient {
     @CitrusTest
     public void successfulDelete(@Optional @CitrusResource TestCaseRunner runner) {
         runner.variable("id", "citrus:randomNumber(10,true)");
-        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
+        runner.$(doFinally().actions(action -> databaseDelete(runner)));
         Duck duck = new Duck().color("yellow").height(10.0).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
+        createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
         duckDelete(runner);
         validateResponse(runner, "{" + " \"message\": \"Duck is deleted\"" +
                 "}", HttpStatus.OK);

@@ -20,13 +20,10 @@ public class DuckActionsFlyTest extends DuckActionClient {
     @CitrusTest
     public void successfulFly(@Optional @CitrusResource TestCaseRunner runner) {
         runner.variable("id", "citrus:randomNumber(10,true)");
-        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
+        runner.$(doFinally().actions(action -> databaseDelete(runner)));
 
         Duck duck = new Duck().color("yellow").height(15.0).material("rubber").sound("quack").wingsState(WingState.ACTIVE);
-
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
+        createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
 
         duckFly(runner, "${id}");
         validateResponseFromResources(runner, "duckActionController/flyWithActiveWings.json", HttpStatus.OK);
@@ -36,13 +33,10 @@ public class DuckActionsFlyTest extends DuckActionClient {
     @CitrusTest
     public void notSuccessfulFly(@Optional @CitrusResource TestCaseRunner runner) {
         runner.variable("id", "citrus:randomNumber(10,true)");
-        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
+        runner.$(doFinally().actions(action -> databaseDelete(runner)));
 
         Duck duck = new Duck().color("yellow").height(15.0).material("rubber").sound("quack").wingsState(WingState.FIXED);
-
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
+        createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
 
         duckFly(runner, "${id}");
         validateResponseFromResources(runner, "duckActionController/flyWithFixedWings.json", HttpStatus.OK);
@@ -52,13 +46,10 @@ public class DuckActionsFlyTest extends DuckActionClient {
     @CitrusTest
     public void undefinedWingsState(@Optional @CitrusResource TestCaseRunner runner) {
         runner.variable("id", "citrus:randomNumber(10,true)");
-        runner.$(doFinally().actions(action -> databaseDelete(runner, "${id}")));
+        runner.$(doFinally().actions(action -> databaseDelete(runner)));
 
         Duck duck = new Duck().color("yellow").height(15.0).material("rubber").sound("quack").wingsState(WingState.UNDEFINED);
-
-        createDuckInBd(runner, "insert into DUCK (id, color, height, material, sound, wings_state)\n" +
-                "values (${id}, '" + duck.color() + "', " + duck.height() + ", '" + duck.material() + "', '" + duck.sound() + "'" +
-                ",'" + duck.wingsState() + "');");
+        createDuckInDb(runner, duck.color(), duck.height(), duck.material(), duck.sound(), duck.wingsState());
 
         duckFly(runner, "${id}");
         validateResponseFromResources(runner, "duckActionController/flyWithUndefinedWings.json", HttpStatus.OK);
